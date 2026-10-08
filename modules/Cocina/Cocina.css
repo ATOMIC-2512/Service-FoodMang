@@ -1,0 +1,16 @@
+/* Mismos colores de estado que el mesero: rojo = atención, naranja = en proceso, verde = listo */
+.pedido { text-align: left; background: var(--surface); border: 1px solid var(--line); border-left: 8px solid var(--c); border-radius: var(--r); padding: .9rem 1rem; display: flex; flex-direction: column; gap: .35rem; }
+.pedido.s-pendiente { --c: var(--alert); --bgc: var(--alert-bg); }
+.pedido.s-preparando { --c: var(--busy); --bgc: var(--busy-bg); }
+.pedido.s-listo { --c: var(--free); --bgc: var(--free-bg); }
+.pedido h3 { font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; }
+.pedido > small { color: var(--muted); }
+.pedido .badge { margin-top: 0; }
+.platillos { list-style: none; margin: .25rem 0 0; padding: 0; }
+.platillo { display: flex; align-items: center; gap: .5rem; padding: .55rem 0; border-top: 1px solid var(--line); }
+.platillo .n { flex: 1; font-size: .95rem; }
+.platillo .n small { display: block; color: var(--muted); }
+.platillo .n small.late { color: var(--alert); font-weight: 700; }
+.platillo.is-listo .n { text-decoration: line-through; color: var(--muted); }
+.btn-sm { min-height: 40px; padding: 0 .9rem; border-radius: 10px; border: 0; background: var(--accent); color: #fff; font-weight: 700; }
+.chip span { font-weight: 700; margin-left: .25rem; }

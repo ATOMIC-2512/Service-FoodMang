@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Food Service · Módulo de cocina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../mesero/styles.css">
+    <link rel="stylesheet" href="Cocina.css">
+</head>
+<body>
+    <div class="app">
+        <header class="top">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">👨‍🍳</div>
+                <div><b>Food Service</b><span>Cocina</span></div>
+            </div>
+            <button class="icon-btn" id="theme" type="button" aria-label="Cambiar tema claro u oscuro">◐</button>
+        </header>
+        <main>
+            <h1 class="sr">Pedidos de cocina</h1>
+            <div class="filters" role="group" aria-label="Filtrar por estado">
+                <button class="chip" type="button" data-f="all" aria-pressed="true">Todos</button>
+                <button class="chip s-alert" type="button" data-f="pendiente" aria-pressed="false"><i class="dot"></i>Pendientes <span id="cPendiente">0</span></button>
+                <button class="chip s-busy" type="button" data-f="preparando" aria-pressed="false"><i class="dot"></i>Preparando <span id="cPreparando">0</span></button>
+                <button class="chip s-free" type="button" data-f="listo" aria-pressed="false"><i class="dot"></i>Listos <span id="cListo">0</span></button>
+            </div>
+            <div class="grid" id="pedidos"></div>
+        </main>
+    </div>
+    <script src="Cocina.js"></script>
+</body>
+</html>
