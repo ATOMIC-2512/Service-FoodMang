@@ -1,0 +1,86 @@
+/* Vista Pedidos y cobro · usa los tokens de styles.css */
+.title { font-size: 1.5rem; margin-bottom: 1rem }
+
+.cnt { font-weight: 700; opacity: .8; margin-left: .25rem }
+.cnt:not(:empty)::before { content: "(" }
+.cnt:not(:empty)::after { content: ")" }
+
+/* Estados del pedido */
+.e-pendiente { --c: var(--muted); --bgc: var(--line) }
+.e-preparando { --c: var(--busy); --bgc: var(--busy-bg) }
+.e-listo { --c: var(--free); --bgc: var(--free-bg) }
+.e-entregado { --c: var(--accent); --bgc: var(--accent-soft) }
+.e-pagado { --c: var(--muted); --bgc: var(--bg) }
+.badge.e-pendiente, .badge.e-pagado { border: 1px solid var(--line) }
+.badge { align-self: auto; margin-top: 0; display: inline-block }
+
+/* Tabla */
+.table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden }
+.orders { width: 100%; border-collapse: collapse }
+.orders th, .orders td { padding: .8rem 1rem; text-align: left; vertical-align: middle }
+.orders thead th { font-size: .85rem; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--line); background: var(--bg) }
+.orders tbody tr + tr td { border-top: 1px solid var(--line) }
+.orders .num { text-align: right }
+.orders td small { display: block; color: var(--muted) }
+.orders .items { max-width: 280px; font-size: .95rem }
+.orders .total-c { font-family: Fraunces, serif; font-weight: 600; text-align: right; white-space: nowrap }
+.orders .done { color: var(--muted); font-size: .9rem }
+.table-wrap .empty { padding: 2rem; margin: 0 }
+
+.btn.sm { width: auto; margin: 0; padding: 0 1rem; min-height: 44px; white-space: nowrap }
+
+@media (max-width: 720px) {
+    .orders thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+    .orders, .orders tbody, .orders tr, .orders td { display: block; width: 100% }
+    .orders tbody tr { padding: .6rem 0 }
+    .orders tbody tr + tr { border-top: 8px solid var(--bg) }
+    .orders tbody tr + tr td { border-top: 0 }
+    .orders td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .35rem 1rem; text-align: right }
+    .orders td::before { content: attr(data-l); color: var(--muted); font-size: .85rem; font-weight: 700; text-align: left; flex: none }
+    .orders .items { max-width: none }
+    .orders td.act { padding-top: .6rem }
+    .orders td.act::before { content: none }
+    .orders td.act .btn.sm { width: 100% }
+}
+
+/* Modal de cobro */
+dialog {
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0;
+    width: min(440px, calc(100% - 2rem));
+    max-height: calc(100% - 2rem);
+    overflow: auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .3)
+}
+dialog::backdrop { background: rgba(10, 16, 18, .6) }
+.pay { padding: 1.25rem }
+.pay .bar { margin-bottom: .75rem; flex-wrap: nowrap }
+.pay .bar h2 { font-size: 1.3rem }
+
+.due {
+    display: flex; justify-content: space-between; align-items: baseline;
+    background: var(--accent-soft); border-radius: 12px; padding: .8rem 1rem; margin-bottom: 1rem
+}
+.due strong { font-family: Fraunces, serif; font-size: 1.8rem }
+.pay .tabs { flex-wrap: nowrap }
+
+.field { margin-bottom: .8rem }
+.field label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: .25rem }
+.field input {
+    width: 100%; min-height: 44px; padding: .55rem .8rem;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg)
+}
+.field input[aria-invalid="true"] { border-color: var(--alert); border-width: 2px }
+.err { display: block; min-height: 0; color: var(--alert); font-weight: 600; font-size: .85rem; margin-top: .2rem }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem }
+
+.change {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border: 1px dashed var(--line); border-radius: 12px; padding: .7rem 1rem; margin-bottom: .5rem
+}
+.change output { font-family: Fraunces, serif; font-size: 1.4rem; font-weight: 600; color: var(--free) }
+.change.short { background: var(--alert-bg); border: 1px solid var(--alert) }
+.change.short output { color: var(--alert); font-size: 1.1rem }
