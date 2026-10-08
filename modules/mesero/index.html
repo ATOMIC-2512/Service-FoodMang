@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Food Service · Módulo de mesero</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app">
+        <header class="top">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">🍽</div>
+                <div><b>Food Service</b><span>Kellys 01 · Comedor</span></div>
+            </div>
+            <div class="search"><label class="sr" for="q">Buscar mesa</label><input id="q" type="search"
+                    placeholder="Buscar mesa o mesero" autocomplete="off"></div>
+            <button class="icon-btn" id="theme" type="button" aria-label="Cambiar tema claro u oscuro">◐</button>
+        </header>
+
+        <main>
+            <section id="vMesas" aria-labelledby="tMesas">
+                <h1 id="tMesas" class="sr">Mesas del comedor</h1>
+                <div class="filters" role="group" aria-label="Filtrar por estado">
+                    <button class="chip" type="button" data-f="all" aria-pressed="true">Todas</button>
+                    <button class="chip s-free" type="button" data-f="free" aria-pressed="false"><i
+                            class="dot"></i>Libres</button>
+                    <button class="chip s-busy" type="button" data-f="busy" aria-pressed="false"><i class="dot"></i>Con
+                        pedido</button>
+                    <button class="chip s-alert" type="button" data-f="alert" aria-pressed="false"><i
+                            class="dot"></i>Requieren atención</button>
+                </div>
+                <div class="grid" id="grid"></div>
+            </section>
+
+            <section id="vComanda" class="hidden" aria-labelledby="tCom">
+                <div class="bar">
+                    <button class="chip" type="button" id="back">← Mesas</button>
+                    <h2 id="tCom"></h2>
+                </div>
+                <div class="layout">
+                    <div>
+                        <div class="tabs" role="tablist" aria-label="Categorías">
+                            <button class="tab" role="tab" data-c="all" aria-selected="true">Todos</button>
+                            <button class="tab" role="tab" data-c="cocina" aria-selected="false">Cocina</button>
+                            <button class="tab" role="tab" data-c="bar" aria-selected="false">Bar</button>
+                        </div>
+                        <div class="menu" id="menu"></div>
+                    </div>
+                    <aside class="ticket" aria-labelledby="tTk">
+                        <h3 id="tTk">Comanda actual</h3>
+                        <div id="warn" class="warn hidden">Pedido duplicado. Revisa las líneas y confirma.</div>
+                        <ul class="lines" id="lines"></ul>
+                        <div class="total"><span>Total</span><strong id="total">$0</strong></div>
+                        <button class="btn" type="button" id="send">Enviar comanda</button>
+                        <button class="btn sec" type="button" id="close">Cerrar mesa</button>
+                    </aside>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
