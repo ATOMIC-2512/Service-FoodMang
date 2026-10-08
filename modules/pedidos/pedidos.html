@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Food Service · Pedidos y cobro</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+:root {
+    --bg: #f3f4f1;
+    --surface: #fff;
+    --ink: #1f2a2e;
+    --muted: #5d6b70;
+    --line: #dde1dc;
+    --accent: #0e7c86;
+    --accent-soft: #d4eef0;
+    --free: #2f9e5a;
+    --busy: #e67e22;
+    --alert: #d93636;
+    --free-bg: #e5f5ea;
+    --busy-bg: #fdeede;
+    --alert-bg: #fde5e5;
+    --r: 14px;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme:dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #12181a;
+        --surface: #1c2528;
+        --ink: #eaf0ef;
+        --muted: #9cadb1;
+        --line: #2f3b3f;
+        --accent: #4fc3cc;
+        --accent-soft: #16363a;
+        --free: #4cc07a;
+        --busy: #f09a4d;
+        --alert: #f26a6a;
+        --free-bg: #163323;
+        --busy-bg: #3a2815;
+        --alert-bg: #3d1c1c
+    }
+}
+
+:root[data-theme="dark"] {
+    --bg: #12181a;
+    --surface: #1c2528;
+    --ink: #eaf0ef;
+    --muted: #9cadb1;
+    --line: #2f3b3f;
+    --accent: #4fc3cc;
+    --accent-soft: #16363a;
+    --free: #4cc07a;
+    --busy: #f09a4d;
+    --alert: #f26a6a;
+    --free-bg: #163323;
+    --busy-bg: #3a2815;
+    --alert-bg: #3d1c1c
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit
+}
+
+html {
+    height: 100%;
+    scroll-padding-top: env(safe-area-inset-top, 0px)
+}
+
+body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem/1.5 "Nunito Sans", system-ui, sans-serif
+}
+
+h1,
+h2,
+h3 {
+    font-family: Fraunces, Georgia, serif;
+    margin: 0;
+    line-height: 1.2
+}
+
+button,
+input {
+    font: inherit;
+    color: inherit
+}
+
+button {
+    cursor: pointer
+}
+
+:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px
+}
+
+.hidden {
+    display: none !important
+}
+
+.sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0)
+}
+
+.app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem
+}
+
+.top {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-right: auto
+}
+
+.logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem
+}
+
+.brand b {
+    font-family: Fraunces, serif;
+    font-size: 1.25rem;
+    display: block;
+    line-height: 1.1
+}
+
+.brand span {
+    font-size: .85rem;
+    color: var(--muted)
+}
+
+.search {
+    flex: 1 1 220px;
+    max-width: 360px;
+    position: relative
+}
+
+.search input {
+    width: 100%;
+    padding: .65rem .9rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface)
+}
+
+.chip,
+.icon-btn {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: .5rem 1rem;
+    min-height: 44px
+}
+
+.icon-btn {
+    width: 44px;
+    padding: 0;
+    font-size: 1.1rem
+}
+
+.chip[aria-pressed="true"],
+.tab[aria-selected="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 700
+}
+
+.filters {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem
+}
+
+.dot {
+    display: inline-block;
+    width: .7rem;
+    height: .7rem;
+    border-radius: 50%;
+    margin-right: .4rem;
+    background: var(--c)
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: .9rem
+}
+
+.mesa {
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 8px solid var(--c);
+    border-radius: var(--r);
+    padding: .9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    min-height: 104px
+}
+
+.mesa:hover {
+    background: var(--bg-s)
+}
+
+.mesa h3 {
+    font-size: 1.15rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center
+}
+
+.mesa small {
+    color: var(--muted)
+}
+
+.badge {
+    align-self: flex-start;
+    margin-top: auto;
+    padding: .1rem .6rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 700;
+    background: var(--bgc);
+    color: var(--c)
+}
+
+.s-free {
+    --c: var(--free);
+    --bgc: var(--free-bg)
+}
+
+.s-busy {
+    --c: var(--busy);
+    --bgc: var(--busy-bg)
+}
+
+.s-alert {
+    --c: var(--alert);
+    --bgc: var(--alert-bg)
+}
+
+.empty {
+    grid-column: 1/-1;
+    text-align: center;
+    color: var(--muted);
+    padding: 2rem
+}
+
+.bar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap
+}
+
+.bar h2 {
+    margin-right: auto;
+    font-size: 1.5rem
+}
+
+.layout {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr
+}
+
+@media(min-width:820px) {
+    .layout {
+        grid-template-columns: 1fr 340px;
+        align-items: start
+    }
+
+    .ticket {
+        position: sticky;
+        top: 1rem
+    }
+}
+
+.tabs {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .9rem;
+    flex-wrap: wrap
+}
+
+.tab {
+    flex: 1;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: .5rem 1rem;
+    min-height: 44px;
+    font-family: Fraunces, serif;
+    font-weight: 600
+}
+
+.menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: .75rem
+}
+
+.plato {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: .75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    align-items: center
+}
+
+.plato:active {
+    transform: scale(.97)
+}
+
+.plato .em {
+    font-size: 2.4rem;
+    width: 100%;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    padding: .4rem 0
+}
+
+.plato b {
+    font-size: .95rem;
+    line-height: 1.25
+}
+
+.plato span {
+    color: var(--muted)
+}
+
+.ticket {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 1rem
+}
+
+.ticket h3 {
+    margin-bottom: .5rem
+}
+
+.lines {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-height: 80px
+}
+
+.line {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .55rem 0;
+    border-bottom: 1px solid var(--line)
+}
+
+.line .n {
+    flex: 1;
+    font-size: .95rem
+}
+
+.line .n small {
+    display: block;
+    color: var(--muted)
+}
+
+.qty {
+    display: flex;
+    align-items: center;
+    gap: .35rem
+}
+
+.qty button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--bg)
+}
+
+.qty output {
+    min-width: 1.4rem;
+    text-align: center;
+    font-weight: 700
+}
+
+.total {
+    display: flex;
+    justify-content: space-between;
+    font-family: Fraunces, serif;
+    font-size: 1.3rem;
+    padding: .8rem 0
+}
+
+.btn {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    margin-top: .5rem
+}
+
+.btn.sec {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line)
+}
+
+.btn:disabled {
+    opacity: .45;
+    cursor: not-allowed
+}
+
+.warn {
+    background: var(--alert-bg);
+    color: var(--alert);
+    border-radius: 10px;
+    padding: .7rem;
+    margin-bottom: .8rem;
+    font-weight: 600
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: .7rem 1.2rem;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+    z-index: 9
+}
+
+@media(prefers-reduced-motion:no-preference) {
+
+    .plato,
+    .mesa {
+        transition: transform .12s, background .12s
+    }
+}
+
+.nav{display:flex;gap:.5rem;flex-wrap:wrap}
+a.chip{display:inline-flex;align-items:center;text-decoration:none;color:inherit}
+.nav .chip[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+
+/* Vista Pedidos y cobro · usa los tokens de styles.css */
+.title { font-size: 1.5rem; margin-bottom: 1rem }
+
+.cnt { font-weight: 700; opacity: .8; margin-left: .25rem }
+.cnt:not(:empty)::before { content: "(" }
+.cnt:not(:empty)::after { content: ")" }
+
+/* Estados del pedido */
+.e-pendiente { --c: var(--muted); --bgc: var(--line) }
+.e-preparando { --c: var(--busy); --bgc: var(--busy-bg) }
+.e-listo { --c: var(--free); --bgc: var(--free-bg) }
+.e-entregado { --c: var(--accent); --bgc: var(--accent-soft) }
+.e-pagado { --c: var(--muted); --bgc: var(--bg) }
+.badge.e-pendiente, .badge.e-pagado { border: 1px solid var(--line) }
+.badge { align-self: auto; margin-top: 0; display: inline-block }
+
+/* Tabla */
+.table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden }
+.orders { width: 100%; border-collapse: collapse }
+.orders th, .orders td { padding: .8rem 1rem; text-align: left; vertical-align: middle }
+.orders thead th { font-size: .85rem; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--line); background: var(--bg) }
+.orders tbody tr + tr td { border-top: 1px solid var(--line) }
+.orders .num { text-align: right }
+.orders td small { display: block; color: var(--muted) }
+.orders .items { max-width: 280px; font-size: .95rem }
+.orders .total-c { font-family: Fraunces, serif; font-weight: 600; text-align: right; white-space: nowrap }
+.orders .done { color: var(--muted); font-size: .9rem }
+.table-wrap .empty { padding: 2rem; margin: 0 }
+
+.btn.sm { width: auto; margin: 0; padding: 0 1rem; min-height: 44px; white-space: nowrap }
+
+@media (max-width: 720px) {
+    .orders thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+    .orders, .orders tbody, .orders tr, .orders td { display: block; width: 100% }
+    .orders tbody tr { padding: .6rem 0 }
+    .orders tbody tr + tr { border-top: 8px solid var(--bg) }
+    .orders tbody tr + tr td { border-top: 0 }
+    .orders td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .35rem 1rem; text-align: right }
+    .orders td::before { content: attr(data-l); color: var(--muted); font-size: .85rem; font-weight: 700; text-align: left; flex: none }
+    .orders .items { max-width: none }
+    .orders td.act { padding-top: .6rem }
+    .orders td.act::before { content: none }
+    .orders td.act .btn.sm { width: 100% }
+}
+
+/* Modal de cobro */
+dialog {
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 0;
+    width: min(440px, calc(100% - 2rem));
+    max-height: calc(100% - 2rem);
+    overflow: auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .3)
+}
+dialog::backdrop { background: rgba(10, 16, 18, .6) }
+.pay { padding: 1.25rem }
+.pay .bar { margin-bottom: .75rem; flex-wrap: nowrap }
+.pay .bar h2 { font-size: 1.3rem }
+
+.due {
+    display: flex; justify-content: space-between; align-items: baseline;
+    background: var(--accent-soft); border-radius: 12px; padding: .8rem 1rem; margin-bottom: 1rem
+}
+.due strong { font-family: Fraunces, serif; font-size: 1.8rem }
+.pay .tabs { flex-wrap: nowrap }
+
+.field { margin-bottom: .8rem }
+.field label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: .25rem }
+.field input {
+    width: 100%; min-height: 44px; padding: .55rem .8rem;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg)
+}
+.field input[aria-invalid="true"] { border-color: var(--alert); border-width: 2px }
+.err { display: block; min-height: 0; color: var(--alert); font-weight: 600; font-size: .85rem; margin-top: .2rem }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem }
+
+.change {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border: 1px dashed var(--line); border-radius: 12px; padding: .7rem 1rem; margin-bottom: .5rem
+}
+.change output { font-family: Fraunces, serif; font-size: 1.4rem; font-weight: 600; color: var(--free) }
+.change.short { background: var(--alert-bg); border: 1px solid var(--alert) }
+.change.short output { color: var(--alert); font-size: 1.1rem }
+
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="top">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">🍽</div>
+                <div><b>Food Service</b><span>Kellys 01 · Comedor</span></div>
+            </div>
+            <nav class="nav" aria-label="Módulos">
+                <a class="chip" href="index.html">Mesas</a>
+                <a class="chip" href="pedidos.html" aria-current="page">Pedidos y cobro</a>
+            </nav>
+            <button class="icon-btn" id="theme" type="button" aria-label="Cambiar tema claro u oscuro">◐</button>
+        </header>
+
+        <main>
+            <h1 class="title">Pedidos y cobro</h1>
+
+            <div class="filters" role="group" aria-label="Filtrar por estado">
+                <button class="chip" type="button" data-f="activos" aria-pressed="true">Activos <span class="cnt"></span></button>
+                <button class="chip e-pendiente" type="button" data-f="pendiente" aria-pressed="false"><i class="dot"></i>Pendientes <span class="cnt"></span></button>
+                <button class="chip e-preparando" type="button" data-f="preparando" aria-pressed="false"><i class="dot"></i>Preparando <span class="cnt"></span></button>
+                <button class="chip e-listo" type="button" data-f="listo" aria-pressed="false"><i class="dot"></i>Listos <span class="cnt"></span></button>
+                <button class="chip e-entregado" type="button" data-f="entregado" aria-pressed="false"><i class="dot"></i>Entregados <span class="cnt"></span></button>
+                <button class="chip e-pagado" type="button" data-f="pagado" aria-pressed="false"><i class="dot"></i>Pagados <span class="cnt"></span></button>
+            </div>
+
+            <div class="table-wrap">
+                <table class="orders">
+                    <caption class="sr">Pedidos del comedor</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Pedido</th>
+                            <th scope="col">Mesa</th>
+                            <th scope="col">Mesero</th>
+                            <th scope="col">Platillos</th>
+                            <th scope="col" class="num">Total</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+                <p id="empty" class="empty hidden">No hay pedidos en este estado.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de cobro -->
+    <dialog id="pay" aria-labelledby="tPay">
+        <form id="payForm" class="pay" novalidate>
+            <div class="bar">
+                <h2 id="tPay"></h2>
+                <button class="icon-btn" type="button" id="payX" aria-label="Cerrar">✕</button>
+            </div>
+
+            <div class="due"><span>Total a pagar</span><strong id="payTotal">$0</strong></div>
+
+            <div class="tabs" role="tablist" aria-label="Método de pago">
+                <button class="tab" type="button" role="tab" id="tabEf" aria-controls="pEf" data-m="efectivo" aria-selected="true">Efectivo</button>
+                <button class="tab" type="button" role="tab" id="tabTj" aria-controls="pTj" data-m="tarjeta" aria-selected="false" tabindex="-1">Tarjeta</button>
+            </div>
+
+            <div id="pEf" role="tabpanel" aria-labelledby="tabEf">
+                <div class="field">
+                    <label for="cash">Monto recibido</label>
+                    <input id="cash" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off">
+                </div>
+                <div class="change" id="changeBox">
+                    <span>Cambio</span><output id="change" for="cash" aria-live="polite">$0</output>
+                </div>
+            </div>
+
+            <div id="pTj" role="tabpanel" aria-labelledby="tabTj" class="hidden">
+                <div class="field">
+                    <label for="cNum">Número de tarjeta</label>
+                    <input id="cNum" type="text" inputmode="numeric" autocomplete="cc-number" maxlength="23" placeholder="0000 0000 0000 0000" aria-describedby="eNum">
+                    <small class="err" id="eNum"></small>
+                </div>
+                <div class="field">
+                    <label for="cName">Nombre en la tarjeta</label>
+                    <input id="cName" type="text" autocomplete="cc-name" placeholder="Como aparece en la tarjeta" aria-describedby="eName">
+                    <small class="err" id="eName"></small>
+                </div>
+                <div class="two">
+                    <div class="field">
+                        <label for="cExp">Vencimiento</label>
+                        <input id="cExp" type="text" inputmode="numeric" autocomplete="cc-exp" maxlength="5" placeholder="MM/AA" aria-describedby="eExp">
+                        <small class="err" id="eExp"></small>
+                    </div>
+                    <div class="field">
+                        <label for="cCvv">CVV</label>
+                        <input id="cCvv" type="password" inputmode="numeric" autocomplete="cc-csc" maxlength="4" placeholder="•••" aria-describedby="eCvv">
+                        <small class="err" id="eCvv"></small>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" type="submit" id="payOk">Confirmar pago</button>
+            <button class="btn sec" type="button" id="payCancel">Cancelar</button>
+        </form>
+    </dialog>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <script src="pedidos.js"></script>
+</body>
+
+</html>
