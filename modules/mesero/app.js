@@ -1,15 +1,15 @@
 $(function () {
   'use strict';
-  var KEY = 'fs-mesero-v1', ME = 'Kellys D';
+  var KEY = 'fs-mesero-v1', KEY_PED = 'fs-pedidos-v1', ME = 'Kellys D';
   var MENU = [
-    {id:1,n:'Camarón zarandeado',p:270,c:'cocina',e:'🦐'},
-    {id:2,n:'Margarita',p:95,c:'bar',e:'🍹'},
-    {id:3,n:'Camarón empanizado',p:230,c:'cocina',e:'🍤'},
-    {id:4,n:'Aguachile negro',p:230,c:'cocina',e:'🥣'},
-    {id:5,n:'Mojito',p:90,c:'bar',e:'🍃'},
-    {id:6,n:'Clericot',p:90,c:'bar',e:'🍷'},
-    {id:7,n:'Ceviche tostada',p:120,c:'cocina',e:'🥑'},
-    {id:8,n:'Cerveza',p:55,c:'bar',e:'🍺'}
+    {id:1,n:'Camarón zarandeado',p:270,c:'cocina',e:'🦐',t:25},
+    {id:2,n:'Margarita',p:95,c:'bar',e:'🍹',t:5},
+    {id:3,n:'Camarón empanizado',p:230,c:'cocina',e:'🍤',t:18},
+    {id:4,n:'Aguachile negro',p:230,c:'cocina',e:'🥣',t:12},
+    {id:5,n:'Mojito',p:90,c:'bar',e:'🍃',t:6},
+    {id:6,n:'Clericot',p:90,c:'bar',e:'🍷',t:4},
+    {id:7,n:'Ceviche tostada',p:120,c:'cocina',e:'🥑',t:10},
+    {id:8,n:'Cerveza',p:55,c:'bar',e:'🍺',t:1}
   ];
   var now = Date.now(), min = 60000;
   var state = null, filter = 'all', query = '', cat = 'all', current = null;
@@ -38,6 +38,56 @@ $(function () {
     return Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2) + ' h';
   }
   var LABEL = {free:'Libre', busy:'Con pedido', alert:'Requiere atención'};
+
+  // ===== Cocina: enviar pedidos a localStorage =====
+  function loadPedidos() {
+    try { var p = JSON.parse(localStorage.getItem(KEY_PED)); return Array.isArray(p) ? p : []; } catch (e) { return []; }
+  }
+  function savePedidos(p) { try { localStorage.setItem(KEY_PED, JSON.stringify(p)); } catch (e) {} }
+
+  // Convierte los items de una mesa en un pedido para cocina (solo lo que aún no se ha enviado)
+  function armarPedido(m, pedidos) {
+    m.sent = m.sent || {};
+    var platillos = [];
+    m.items.forEach(function (it) {
+      var d = dish(it.id), nuevos = it.q - (m.sent[it.id] || 0);
+      if (d.c === 'cocina' && nuevos > 0) {
+        platillos.push({id:d.id, nombre:d.n, q:nuevos, tiempoEstimado:d.t, estado:'pendiente', inicio:null});
+      }
+      m.sent[it.id] = it.q;
+    });
+    if (!platillos.length) return false;
+    var abierto = null;
+    for (var i = pedidos.length - 1; i >= 0; i--) {
+      if (pedidos[i].mesa === m.id && pedidos[i].estado !== 'listo') {
+        abierto = pedidos[i];
+        break;
+      }
+    }
+    if (abierto) {
+      if (abierto.estado === 'preparando') {
+        platillos.forEach(function (pl) { pl.estado = 'preparando'; pl.inicio = Date.now(); });
+      }
+      abierto.platillos = abierto.platillos.concat(platillos);
+      return true;
+    }
+    var nextId = pedidos.reduce(function (mx, p) { return Math.max(mx, p.id); }, 0) + 1;
+    pedidos.push({id:nextId, mesa:m.id, mesero:m.w, estado:'pendiente', creado:Date.now(), platillos:platillos});
+    return true;
+  }
+  function enviarACocina(m) {
+    var pedidos = loadPedidos();
+    var hay = armarPedido(m, pedidos);
+    if (hay) savePedidos(pedidos);
+    return hay;
+  }
+  // Primera vez: las mesas de ejemplo con pedido también aparecen en cocina
+  function sembrarCocina() {
+    if (localStorage.getItem(KEY_PED) !== null) return;
+    var pedidos = [];
+    state.forEach(function (m) { if (m.st !== 'free') armarPedido(m, pedidos); });
+    savePedidos(pedidos); save();
+  }
 
   function toast(msg) {
     var $t = $('#toast').text(msg).removeClass('hidden');
@@ -129,12 +179,14 @@ $(function () {
     var m = find(current);
     if (m.st === 'free') { m.st = 'busy'; m.w = ME; m.since = Date.now(); }
     else m.st = 'busy';
-    save(); renderTicket(); toast('Comanda enviada a cocina y bar · Mesa ' + m.id);
+    var aCocina = enviarACocina(m);      // <-- manda lo nuevo a cocina
+    save(); renderTicket();
+    toast(aCocina ? 'Comanda enviada a cocina · Mesa ' + m.id : 'Comanda actualizada (solo bar) · Mesa ' + m.id);
   });
   $('#close').on('click', function () {
     var m = find(current);
     if (!window.confirm('¿Cerrar la mesa ' + m.id + '? Se borrará la comanda actual.')) return;
-    m.st = 'free'; m.w = null; m.since = null; m.items = [];
+    m.st = 'free'; m.w = null; m.since = null; m.items = []; m.sent = {};
     save(); toast('Mesa ' + m.id + ' liberada'); show('mesas'); renderMesas();
   });
   $('#theme').on('click', function () {
@@ -144,6 +196,6 @@ $(function () {
     root.setAttribute('data-theme', dark ? 'light' : 'dark');
   });
 
-  state = load(); save(); renderMesas();
+  state = load(); save(); sembrarCocina(); renderMesas();
   setInterval(function () { if (!$('#vMesas').hasClass('hidden')) renderMesas(); }, 30000);
 });
