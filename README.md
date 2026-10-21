@@ -56,7 +56,7 @@ FOODMANG/
 1. Clona el repositorio y accede a su carpeta raíz.
 
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
+   git clone https://github.com/ATOMIC-2512/Service-FoodMang.git
    cd FOODMANG
    ```
 
