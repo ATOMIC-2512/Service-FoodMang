@@ -1,78 +1,58 @@
-# FOODMANG 🍽️
+FOODMANG 🍽️
+Sistema de gestión para restaurantes
 
-Sistema web ilustrativo para el control y la gestión básica de un restaurante. El proyecto cuenta con una interfaz para representar las actividades principales del personal, como la gestión de pedidos y la comunicación entre las áreas de cocina y meseros.
+FOODMANG es un proyecto de software que integra una interfaz web y un backend para apoyar la gestión de las operaciones de un restaurante. La aplicación está organizada en módulos y busca centralizar funcionalidades del sistema, con una API para procesar solicitudes y una base de datos para la información persistente.
+Estado: En desarrollo. Las funcionalidades disponibles dependen de los módulos implementados e integrados en la versión actual.
 
-Actualmente, el proyecto se encuentra en una etapa inicial y está desarrollado exclusivamente en el frontend, sin conexión a un servidor ni base de datos.
-
-## 📌 Características
-
-- **Cocina:** módulo destinado a representar la visualización y gestión de pedidos dentro de la cocina.
-- **Mesero:** interfaz principal para representar las operaciones del personal de servicio.
-- **Pedidos:** módulo para mostrar y gestionar pedidos de manera ilustrativa.
-- **Interfaz web:** estructura desarrollada con HTML, estilos CSS y funcionalidades JavaScript.
-
-> **Nota:** Las funcionalidades son demostrativas. No existe persistencia de información ni comunicación con un backend.
-
-## 🗂️ Estructura del proyecto
-
-```text
+Funcionalidades
+- Interfaz web para las funciones operativas del restaurante.
+- Backend con API REST para procesar las solicitudes del sistema.
+- Gestión de información mediante una base de datos relacional.
+- Organización modular para facilitar el mantenimiento y la incorporación de nuevas funciones.
+Tecnologías
+- Frontend: HTML, CSS y JavaScript.
+- Backend: Node.js y Express.
+- Base de datos: PostgreSQL.
+- Acceso a datos: Sequelize.
+- Herramientas: npm, Git y Postman.
+La lista debe actualizarse si cambia la tecnología utilizada por alguna parte del proyecto.
+Estructura del proyecto
 FOODMANG/
-└── modules/
-    ├── Cocina/
-    │   ├── Cocina.css
-    │   ├── Cocina.html
-    │   └── Cocina.js
-    │
-    ├── mesero/
-    │   ├── app.js
-    │   ├── index.html
-    │   └── styles.css
-    │
-    └── pedidos/
-        ├── pedidos.css
-        ├── pedidos.html
-        └── pedidos.js
-```
+├── config/                 # Configuración de la aplicación y conexiones
+├── controllers/            # Controladores de la API
+├── middlewares/            # Validaciones y controles de acceso
+├── models/                 # Modelos de datos
+├── modules/                # Módulos funcionales del sistema
+├── routes/                 # Rutas de la API
+├── scripts/                # Scripts auxiliares
+├── services/               # Lógica de negocio
+├── .env.example            # Plantilla de configuración
+├── index.js                # Punto de entrada del backend
+├── FOOD SERVICE MANG.sql   # Script SQL de referencia
+├── MANG - ERD.png          # Diagrama entidad-relación
+├── package.json            # Dependencias y comandos del proyecto
+└── README.md
+Requisitos
+- Node.js y npm.
+- PostgreSQL.
+- Navegador web moderno.
+- Git (opcional, para clonar y actualizar el repositorio).
+Instalación y ejecución
+1. Clona el repositorio y accede a su carpeta raíz.
+   git clone <URL_DEL_REPOSITORIO>
+   cd FOODMANG
+2. Instala las dependencias del backend.
+   npm install
+3. Crea la base de datos en PostgreSQL. Revisa FOOD SERVICE MANG.sql antes de ejecutarlo y consulta MANG - ERD.png para visualizar el diseño de datos.
+4. Crea el archivo .env a partir de .env.example y configura las variables que utiliza la aplicación. No publiques credenciales ni secretos.
+5. Inicia el backend con el comando definido en package.json. Para consultar los comandos disponibles:
+   npm run
+6. Ejecuta el frontend con el método configurado para sus archivos. Si está compuesto por páginas estáticas, puedes abrir su HTML de entrada en un navegador o utilizar Live Server desde Visual Studio Code.
+Los comandos exactos y las variables requeridas dependen de la configuración actual del repositorio. Consulta package.json y .env.example antes de iniciar la aplicación.
 
-## 🛠️ Tecnologías utilizadas
+Desarrollo y pruebas
+Utiliza Postman para comprobar los endpoints de la API y validar respuestas, datos de entrada y permisos de acceso. Prueba también el flujo de la interfaz y su comunicación con el backend cuando ambos estén integrados.
 
-- **HTML5:** estructura de las páginas web.
-- **CSS3:** diseño visual y estilos de la interfaz.
-- **JavaScript:** comportamiento e interactividad del frontend.
-
-## 🚀 Instalación y ejecución
-
-No se requiere instalar dependencias ni configurar un servidor backend.
-
-1. Descarga o clona el repositorio.
-2. Abre la carpeta `FOODMANG` en Visual Studio Code.
-3. Accede al módulo que deseas visualizar.
-4. Abre el archivo HTML correspondiente en un navegador.
-
-Para facilitar la ejecución y evitar posibles problemas con las rutas de archivos, se recomienda utilizar la extensión **Live Server** de Visual Studio Code.
-
-Como punto de entrada inicial, puedes abrir `modules/mesero/index.html`.
-
-## ⚙️ Alcance actual
-
-El proyecto se limita a la representación visual e interactiva de un sistema de control de restaurante.
-
-- No cuenta con backend.
-- No utiliza una base de datos.
-- No dispone de autenticación de usuarios.
-- No garantiza que los datos se conserven al recargar la página.
-- No existe sincronización entre los módulos mediante un servidor.
-
-## 🔮 Mejoras futuras
-
-- Implementar un backend para procesar las operaciones.
-- Integrar una base de datos para almacenar pedidos y productos.
-- Incorporar autenticación y roles para meseros y personal de cocina.
-- Permitir el seguimiento de los pedidos en tiempo real.
-- Agregar módulos para productos, mesas, inventario y reportes.
-
-## 📄 Estado del proyecto
-
-**En desarrollo — Prototipo frontend.**
-
-FOODMANG es un proyecto ilustrativo cuyo objetivo es representar la interfaz y el funcionamiento básico de un sistema de control para restaurantes. Su arquitectura podrá ampliarse posteriormente con servicios backend y almacenamiento persistente.
+No incluyas contraseñas, tokens vigentes ni otros datos sensibles en capturas o archivos versionados. Mantén .env y node_modules/ fuera del control de versiones.
+Estado del proyecto
+FOODMANG se encuentra en desarrollo. La documentación debe mantenerse alineada con las funcionalidades implementadas, la estructura de la base de datos y los procedimientos de ejecución vigentes.
