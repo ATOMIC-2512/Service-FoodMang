@@ -588,7 +588,9 @@ dialog::backdrop { background: rgba(10, 16, 18, .6) }
                 <div><b>Food Service</b><span>Kellys 01 · Comedor</span></div>
             </div>
             <nav class="nav" aria-label="Módulos">
-                <a class="chip" href="index.html">Mesas</a>
+
+                <a class="chip" href="../mesero/index.html">Mesas</a>
+
                 <a class="chip" href="pedidos.html" aria-current="page">Pedidos y cobro</a>
             </nav>
             <button class="icon-btn" id="theme" type="button" aria-label="Cambiar tema claro u oscuro">◐</button>
@@ -596,6 +598,9 @@ dialog::backdrop { background: rgba(10, 16, 18, .6) }
 
         <main>
             <h1 class="title">Pedidos y cobro</h1>
+
+            <p style="margin:-.65rem 0 1rem;color:var(--muted);font-size:.9rem">Datos de demostración: los cambios se realizan localmente y no se guardan en el backend.</p>
+
 
             <div class="filters" role="group" aria-label="Filtrar por estado">
                 <button class="chip" type="button" data-f="activos" aria-pressed="true">Activos <span class="cnt"></span></button>
@@ -684,7 +689,294 @@ dialog::backdrop { background: rgba(10, 16, 18, .6) }
 
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-    <script src="pedidos.js"></script>
+
+    
+<script>
+/*
+ * DEMOSTRACIÓN LOCAL:
+ * Los siguientes registros simulan la respuesta que podría entregar el backend.
+ * Para conectar el sistema real, reemplaza pedidosDemo por una petición fetch()
+ * al endpoint de tu API y adapta los nombres de los campos a su respuesta.
+ */
+(() => {
+    "use strict";
+
+    const pedidosDemo = [
+        { id: 1048, mesa: "Mesa 03", mesero: "Mariana López", items: [{ nombre: "Hamburguesa clásica", cantidad: 2 }, { nombre: "Papas a la francesa", cantidad: 1 }, { nombre: "Limonada", cantidad: 2 }], total: 468.00, estado: "pendiente", fecha: "2026-10-13T19:42:00" },
+        { id: 1047, mesa: "Mesa 07", mesero: "Carlos Méndez", items: [{ nombre: "Club sándwich", cantidad: 1 }, { nombre: "Café americano", cantidad: 2 }], total: 286.00, estado: "preparando", fecha: "2026-10-13T19:35:00" },
+        { id: 1046, mesa: "Mesa 02", mesero: "Andrea Ruiz", items: [{ nombre: "Enchiladas verdes", cantidad: 2 }, { nombre: "Agua natural", cantidad: 2 }], total: 354.00, estado: "listo", fecha: "2026-10-13T19:28:00" },
+        { id: 1045, mesa: "Mesa 05", mesero: "Jorge Castillo", items: [{ nombre: "Pizza margarita", cantidad: 1 }, { nombre: "Refresco", cantidad: 2 }], total: 329.00, estado: "entregado", fecha: "2026-10-13T19:18:00" },
+        { id: 1044, mesa: "Mesa 01", mesero: "Mariana López", items: [{ nombre: "Ensalada César", cantidad: 1 }, { nombre: "Pasta Alfredo", cantidad: 1 }, { nombre: "Agua mineral", cantidad: 1 }], total: 412.00, estado: "pagado", fecha: "2026-10-13T18:54:00", metodoPago: "Tarjeta" },
+        { id: 1043, mesa: "Mesa 08", mesero: "Carlos Méndez", items: [{ nombre: "Tacos de arrachera", cantidad: 3 }, { nombre: "Limonada", cantidad: 1 }], total: 397.00, estado: "pendiente", fecha: "2026-10-13T19:48:00" },
+        { id: 1042, mesa: "Mesa 04", mesero: "Andrea Ruiz", items: [{ nombre: "Sopa del día", cantidad: 1 }, { nombre: "Pollo a la plancha", cantidad: 1 }], total: 265.00, estado: "listo", fecha: "2026-10-13T19:05:00" }
+    ];
+
+    const $ = selector => document.querySelector(selector);
+    const rows = $("#rows");
+    const empty = $("#empty");
+    const filters = [...document.querySelectorAll("[data-f]")];
+    const money = amount => new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency: "MXN"
+    }).format(amount);
+
+    const estados = {
+        pendiente: "Pendiente",
+        preparando: "Preparando",
+        listo: "Listo",
+        entregado: "Entregado",
+        pagado: "Pagado"
+    };
+
+    // Copia local para que las acciones de la demostración no alteren la muestra original.
+    let pedidos = pedidosDemo.map(pedido => ({
+        ...pedido,
+        items: pedido.items.map(item => ({ ...item }))
+    }));
+
+    let filtroActual = "activos";
+    let pedidoCobro = null;
+    let metodo = "efectivo";
+    let toastTimer;
+
+    function mostrarAviso(mensaje) {
+        const aviso = $("#toast");
+        aviso.textContent = mensaje;
+        aviso.classList.remove("hidden");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => aviso.classList.add("hidden"), 2800);
+    }
+
+    function escaparHTML(valor) {
+        return String(valor).replace(/[&<>"']/g, caracter => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[caracter]);
+    }
+
+    function renderizarPedidos() {
+        const activos = pedidos.filter(p => p.estado !== "pagado");
+        const visibles = pedidos.filter(p =>
+            filtroActual === "activos"
+                ? p.estado !== "pagado"
+                : p.estado === filtroActual
+        );
+
+        filters.forEach(boton => {
+            const filtro = boton.dataset.f;
+            boton.setAttribute("aria-pressed", String(filtro === filtroActual));
+
+            const contador = boton.querySelector(".cnt");
+            if (contador) {
+                contador.textContent = filtro === "activos"
+                    ? activos.length
+                    : pedidos.filter(p => p.estado === filtro).length;
+            }
+        });
+
+        rows.innerHTML = visibles.map(pedido => {
+            const resumen = pedido.items
+                .map(item => `${item.cantidad}× ${escaparHTML(item.nombre)}`)
+                .join(", ");
+
+            let accion = "";
+            if (pedido.estado === "pendiente") {
+                accion = `<button class="btn sm" type="button" data-action="preparar" data-id="${pedido.id}">Iniciar preparación</button>`;
+            } else if (pedido.estado === "preparando") {
+                accion = `<button class="btn sm" type="button" data-action="listo" data-id="${pedido.id}">Marcar listo</button>`;
+            } else if (pedido.estado === "listo") {
+                accion = `<button class="btn sm" type="button" data-action="entregado" data-id="${pedido.id}">Marcar entregado</button>`;
+            } else if (pedido.estado === "entregado") {
+                accion = `<button class="btn sm" type="button" data-action="cobrar" data-id="${pedido.id}">Cobrar pedido</button>`;
+            } else {
+                accion = `<span class="done">Cobrado${pedido.metodoPago ? " · " + escaparHTML(pedido.metodoPago) : ""}</span>`;
+            }
+
+            const fecha = new Date(pedido.fecha);
+            const hora = Number.isNaN(fecha.getTime())
+                ? "Hora no disponible"
+                : fecha.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+
+            return `
+                <tr>
+                    <td data-l="Pedido"><strong>#${pedido.id}</strong><small>${hora}</small></td>
+                    <td data-l="Mesa">${escaparHTML(pedido.mesa)}</td>
+                    <td data-l="Mesero">${escaparHTML(pedido.mesero)}</td>
+                    <td data-l="Platillos" class="items">${resumen}</td>
+                    <td data-l="Total" class="total-c">${money(pedido.total)}</td>
+                    <td data-l="Estado"><span class="badge e-${pedido.estado}">${estados[pedido.estado]}</span></td>
+                    <td data-l="Acción" class="act">${accion}</td>
+                </tr>`;
+        }).join("");
+
+        empty.classList.toggle("hidden", visibles.length > 0);
+    }
+
+    filters.forEach(boton => {
+        boton.addEventListener("click", () => {
+            filtroActual = boton.dataset.f;
+            renderizarPedidos();
+        });
+    });
+
+    rows.addEventListener("click", evento => {
+        const boton = evento.target.closest("button[data-action]");
+        if (!boton) return;
+
+        const pedido = pedidos.find(p => p.id === Number(boton.dataset.id));
+        if (!pedido) return;
+
+        switch (boton.dataset.action) {
+            case "preparar":
+                pedido.estado = "preparando";
+                break;
+            case "listo":
+                pedido.estado = "listo";
+                break;
+            case "entregado":
+                pedido.estado = "entregado";
+                break;
+            case "cobrar":
+                abrirCobro(pedido);
+                return;
+        }
+
+        renderizarPedidos();
+        mostrarAviso(`Pedido #${pedido.id}: ${estados[pedido.estado].toLowerCase()}. Cambio local de demostración.`);
+    });
+
+    const modal = $("#pay");
+
+    function abrirCobro(pedido) {
+        pedidoCobro = pedido;
+        metodo = "efectivo";
+
+        $("#tPay").textContent = `Cobrar pedido #${pedido.id}`;
+        $("#payTotal").textContent = money(pedido.total);
+        $("#cash").value = "";
+        $("#cNum").value = "";
+        $("#cName").value = "";
+        $("#cExp").value = "";
+        $("#cCvv").value = "";
+
+        document.querySelectorAll(".err").forEach(error => error.textContent = "");
+        document.querySelectorAll("[aria-invalid]").forEach(campo => campo.removeAttribute("aria-invalid"));
+
+        cambiarMetodo("efectivo");
+        actualizarCambio();
+        modal.showModal();
+    }
+
+    function cerrarCobro() {
+        if (modal.open) modal.close();
+        pedidoCobro = null;
+    }
+
+    function cambiarMetodo(nuevoMetodo) {
+        metodo = nuevoMetodo;
+        $("#pEf").classList.toggle("hidden", metodo !== "efectivo");
+        $("#pTj").classList.toggle("hidden", metodo !== "tarjeta");
+
+        $("#tabEf").setAttribute("aria-selected", String(metodo === "efectivo"));
+        $("#tabTj").setAttribute("aria-selected", String(metodo === "tarjeta"));
+        $("#tabEf").tabIndex = metodo === "efectivo" ? 0 : -1;
+        $("#tabTj").tabIndex = metodo === "tarjeta" ? 0 : -1;
+    }
+
+    $("#tabEf").addEventListener("click", () => cambiarMetodo("efectivo"));
+    $("#tabTj").addEventListener("click", () => cambiarMetodo("tarjeta"));
+    $("#cash").addEventListener("input", actualizarCambio);
+
+    function actualizarCambio() {
+        const recibido = Number($("#cash").value || 0);
+        const total = pedidoCobro ? pedidoCobro.total : 0;
+        const diferencia = recibido - total;
+        const cajaCambio = $("#changeBox");
+        const etiqueta = cajaCambio.querySelector("span");
+        const salida = $("#change");
+
+        if ($("#cash").value !== "" && diferencia < 0) {
+            etiqueta.textContent = "Falta por cubrir";
+            salida.textContent = money(Math.abs(diferencia));
+            cajaCambio.classList.add("short");
+        } else {
+            etiqueta.textContent = "Cambio";
+            salida.textContent = money(Math.max(0, diferencia));
+            cajaCambio.classList.remove("short");
+        }
+    }
+
+    $("#payX").addEventListener("click", cerrarCobro);
+    $("#payCancel").addEventListener("click", cerrarCobro);
+
+    modal.addEventListener("click", evento => {
+        if (evento.target === modal) cerrarCobro();
+    });
+
+    $("#payForm").addEventListener("submit", evento => {
+        evento.preventDefault();
+        if (!pedidoCobro) return;
+
+        if (metodo === "efectivo") {
+            const recibido = Number($("#cash").value);
+
+            if ($("#cash").value.trim() === "" ||
+                !Number.isFinite(recibido) ||
+                recibido < pedidoCobro.total) {
+                $("#cash").setAttribute("aria-invalid", "true");
+                mostrarAviso("El monto recibido debe cubrir el total del pedido.");
+                return;
+            }
+            $("#cash").removeAttribute("aria-invalid");
+        } else {
+            // Solo valida campos de muestra. No se procesa ningún pago real.
+            const numero = $("#cNum").value.replace(/\s/g, "");
+            const nombre = $("#cName").value.trim();
+            const vencimiento = $("#cExp").value.trim();
+            const cvv = $("#cCvv").value.trim();
+
+            const validaciones = [
+                { input: "#cNum", error: "#eNum", valido: /^\d{13,19}$/.test(numero), mensaje: "Ingresa entre 13 y 19 dígitos." },
+                { input: "#cName", error: "#eName", valido: nombre.length >= 3, mensaje: "Escribe el nombre de la tarjeta." },
+                { input: "#cExp", error: "#eExp", valido: /^(0[1-9]|1[0-2])\/\d{2}$/.test(vencimiento), mensaje: "Usa el formato MM/AA." },
+                { input: "#cCvv", error: "#eCvv", valido: /^\d{3,4}$/.test(cvv), mensaje: "Ingresa 3 o 4 dígitos." }
+            ];
+
+            let formularioValido = true;
+            validaciones.forEach(validacion => {
+                $(validacion.error).textContent = validacion.valido ? "" : validacion.mensaje;
+                $(validacion.input).setAttribute("aria-invalid", String(!validacion.valido));
+                if (!validacion.valido) formularioValido = false;
+            });
+
+            if (!formularioValido) return;
+        }
+
+        pedidoCobro.estado = "pagado";
+        pedidoCobro.metodoPago = metodo === "efectivo" ? "Efectivo" : "Tarjeta (demo)";
+        const idPedido = pedidoCobro.id;
+
+        cerrarCobro();
+        renderizarPedidos();
+        mostrarAviso(`Pedido #${idPedido} marcado como pagado. No se realizó ningún cobro real.`);
+    });
+
+    // Alterna el tema de la interfaz.
+    $("#theme").addEventListener("click", () => {
+        const raiz = document.documentElement;
+        const activarOscuro = raiz.dataset.theme !== "dark";
+        raiz.dataset.theme = activarOscuro ? "dark" : "light";
+        mostrarAviso(activarOscuro ? "Tema oscuro activado" : "Tema claro activado");
+    });
+
+    renderizarPedidos();
+
+})();
+</script>
+
 </body>
 
 </html>
